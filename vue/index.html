@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Vue</title>
+	<link rel="stylesheet" href="index.css" />
+	<script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+	<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+</head>
+<body>
+	<div id="app">
+		<h3>热身</h3>
+		<p>{{message}}</p>
+		<button v-on:click="reverseMessage">反转字符串</button>
+		<p>过滤：首字母大写{{ msg | capitalize }}</p>
+		<hr />
+	</div>
+	<div id="app1">
+		<h3>条件语句</h3>
+		<p><b>v-if</b></p>
+		<p v-if="seen">现在你看到我了</p>
+		<template v-if="ok">
+			<p>这是模板</p>
+		</template>
+		<p><b>v-else</b></p>
+		<div v-if="Math.random()>0.5">Sorry</div>
+		<div v-else="">Not sorry</div>
+		<p><b>v-else-if</b></p>
+		<div v-if="type==='A'">A</div>
+		<div v-else-if="type==='B'">B</div>
+		<div v-else-if="type==='C'">C</div>
+		<div v-else>Not A/B/C</div>
+		<p><b>注意：</b>v-else、v-else-if必须跟在v-if或者v-else-if之后</p>
+		<p>v-show也可作判断（类比于v-if）</p>
+		<hr />
+	</div>
+	<div id="app2">
+		<h3>循环语句</h3>
+		<p><b>v-for</b> site in sites语法，sites:数据源；site:单项</p>
+		<ol>
+			<li v-for="(site,index) in (sites)">{{site.name}}-{{index}}</li>
+		</ol>
+		<p><b>v-for</b> 迭代对象</p>
+		<ul>
+			<li v-for="(value,key,index) in object">{{key}}:{{value}}:{{index}}</li>
+		</ul>
+		<p><b>v-for</b> 迭代整数</p>
+		<ul>
+			<li v-for="n in 10">{{n}}</li>
+		</ul>
+		<hr />
+	</div>
+	<div id="app3">
+		<h3>计算属性</h3>
+		<p><b>computed</b></p>
+		<p>原始字符串：{{message}}</p>
+		<p>计算反转后：{{reversedMessage}}</p>
+		<p><b>注意：</b>效果同methods,但computed只有相关依赖发生变化才重新取值，methods每次渲染都会执行</p>
+		<p><b>computed setter</b>默认属性只有getter 需要时可提供setter</p>
+		<p>{{site}}</p>
+		<hr />
+	</div>
+	<div id="app4">
+		<h3>监听属性</h3>
+		<p><b>watch</b></p>
+		<div id="computed_props">
+			千米：<input type="text" v-model="kilometers" />
+			米：<input type="text" v-model="meters" />
+		</div>
+		<p id="info">{{total}}</p>
+		<hr />
+	</div>
+	<div id="app5">
+		<h3>样式绑定</h3>
+		<p><b>v-bind:class</b></p>
+		<div v-bind:class="{ active: isActive }"></div>
+		<div class="static" v-bind:class="{ active:isActive,'text-danger':hasError}"></div>
+		<div class="static" v-bind:class="classObject"></div>
+		<div v-bind:class="[activeClass,errorClass]"></div>
+		<p><b>v-bind:style</b>内联样式</p>
+		<div v-bind:style="{color:activeColor,fontSize:fontSize+'px'}">测试</div>
+		<p><b>注意：</b>当 v-bind:style 使用需要特定前缀的 CSS 属性时，如 transform ，Vue.js 会自动侦测并添加相应的前缀。</p>
+		<hr />
+	</div>
+	<div id="app6">
+		<h3>事件处理器</h3>
+		<p><b>v-on</b></p>
+		<button v-on:click="counter+=1">增加1</button>
+		<p>这个按钮被点击了 {{counter}} 次</p>
+		<button v-on:click="greet">Greet</button>
+		<button v-on:click="say('hi')">say Hi</button>
+		<p><b>事件修饰符</b>event.preventDefault() 或 event.stopPropagation()。</p>
+		<!-- 阻止单击事件冒泡 -->
+		<a v-on:click.stop="doThis"></a>
+		<!-- 提交事件不再重载页面 -->
+		<form v-on:submit.prevent="onSubmit"></form>
+		<!-- 修饰符可以串联  -->
+		<a v-on:click.stop.prevent="doThat"></a>
+		<!-- 只有修饰符 -->
+		<form v-on:submit.prevent></form>
+		<!-- 添加事件侦听器时使用事件捕获模式 -->
+		<div v-on:click.capture="doThis">...</div>
+		<!-- 只当事件在该元素本身（而不是子元素）触发时触发回调 -->
+		<div v-on:click.self="doThat">...</div>
+		
+		<!-- click 事件只能点击一次，2.1.4版本新增 -->
+		<a v-on:click.once="doThis"></a>
+		<p><b>注意：</b>v-on可以简写为@</p>
+		<hr />
+	</div>
+	<div id="app7">
+		<h3>表单</h3>
+		<p><b>v-model</b> 在表单控件上创建双向数据绑定</p>
+		<p><b>input</b> 元素:</p>
+		<input v-model="message" placeholder="编辑我..." />
+		<p>消息是：{{message}}</p>
+		
+		<p><b>textarea</b> 元素</p>
+		<p style="white-space: pre;">{{message2}}</p>
+		<textarea v-model="message2" placeholder="多行文本输入"></textarea>
+		
+		<p><b>单个复选框</b></p>
+		<input type="checkbox" id="checkbox" v-model="checked" />
+		<label for="checkbox">{{checked}}</label>
+		
+		<p><b>多个复选框</b></p>
+		<input type="checkbox" id="runoob" value="Runoob" v-model="checkedNames">
+	  	<label for="runoob">Runoob</label>
+	  	<input type="checkbox" id="google" value="Google" v-model="checkedNames">
+	  	<label for="google">Google</label>
+	  	<input type="checkbox" id="taobao" value="Taobao" v-model="checkedNames">
+	  	<label for="taobao">taobao</label>
+		<br />
+		<p>选择的值为：{{checkedNames}}</p>
+		
+		<p><b>单项按钮</b></p>
+		<input type="radio" id="baidu" value="baidu" v-model="picked" />
+		<label for="baidu">baidu</label>
+		<br />
+		<input type="radio" id="google" value="google" v-model="picked" />
+		<label for="google">google</label>
+		<p>选中的值为：{{picked}}</p>
+		
+		<p><b>selec列表</b></p>
+		<select name="fruit" v-model="selected">
+			<option v-for="site in sites" v-bind:value="site">{{site}}</option>
+		</select>
+		<p>选择的是：{{selected}}</p>
+		
+		<p><b>修饰符 .lazy .number .trim</b></p>
+		<input type="text" v-model.lazy="lazy" />
+		<input type="number" v-model.number='number' />
+		<input type="text" v-model.trim="trim" />
+		<hr />
+	</div>
+	<div id="app8">
+		<h3>组件</h3>
+		<p>全局组件</p>
+		<demo></demo>
+		<p>局部组件</p>
+		<part></part>
+		<p><b>Prop</b>父组件用来传递数据的自定义属性</p>
+		<child message='hello!'></child>
+		<p><b>动态Prop</b>使用v-bind</p>
+		<div>
+			<input v-model="parentMsg" />
+			<br />
+			<child v-bind:message='parentMsg'></child>
+		</div>
+		<p><b>Prop实例1</b></p>
+		<ol>
+			<todo-item v-for="item in items" v-bind:todo='item'></todo-item>
+		</ol>
+		<p><b>注意：</b>prop 是单向绑定的：当父组件的属性变化时，将传导给子组件，但是不会反过来</p>
+		<p><b>自定义事件</b> 如果子组件要把数据传递回去，就需要使用自定义事件</p>
+		<p>使用 $on(eventName) 监听事件</p>
+		<p>使用 $emit(eventName) 触发事件</p>
+		<div id="counter-event-example">
+			<p>{{total}}</p>
+			<button-counter v-on:increment="incrementTotal"></button-counter>
+			<button-counter v-on:increment="incrementTotal"></button-counter>
+		</div>
+		<hr />
+	</div>
+	<div id="app9">
+		<h3>自定义指令</h3>
+		<p>页面载入时，input元素自动获取焦点：</p>
+		<input v-focus />
+		<input type="text" v-hover />
+		<hr />
+	</div>
+	<div id="app10">
+		<h3>路由</h3>
+		<p>Hi App</p>
+		<p>
+			<!--使用router-link组件来导航-->
+			<!--通过传入‘to’属性指定链接-->
+			<router-link to="/foo">Go to Foo</router-link>
+			<router-link to="/bar">Go to Bar</router-link>
+		</p>
+		<router-view></router-view>
+		<hr />
+	</div>
+	<script src="index.js"></script>
+</body>
+</html>
