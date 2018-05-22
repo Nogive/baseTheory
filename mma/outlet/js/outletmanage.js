@@ -827,71 +827,135 @@ function setSmartSelectValue(key, id, name) {
   $$("#item-after-sss-" + key).text(name);
 }
 //初始化编辑页面数据
-function showValue4Outlet(id) {
-  var outlet = JSON.parse(storage.getStorage("o" + id));
-  if (outlet.outletName != undefined) {
-    $$("#outletName").val(outlet.outletName);
+function showValue4Outlet() {
+  var outlet = currentOutlet;
+  if (outlet.name != undefined) {
+    $$("#name").val(outlet.name);
   }
 
-  if (outlet.outletCode != undefined) {
-    $$("#outletCode").val(outlet.outletCode);
+  if (outlet.code != undefined) {
+    $$("#code").val(outlet.code);
   }
 
   if (outlet.longitude != undefined && outlet.latitude != undefined) {
-  	var w=$$("#omap").parent(".mapimg").width();
+    var w = $$("#location")
+      .parent(".mapimg")
+      .width();
     var mapSrc =
       "http://restapi.amap.com/v3/staticmap?location=" +
       outlet.longitude +
       "," +
       outlet.latitude +
-      "&zoom=14&size="+w+"*200&markers=large,,:" +
+      "&zoom=14&size=" +
+      w +
+      "*200&markers=large,,:" +
       outlet.longitude +
       "," +
       outlet.latitude +
       "&key=b2a701a4c4e88acd8fac16bbf402484f";
-    $$("#omap").attr("src", mapSrc);
-		$$("#omap").attr("data-lat", outlet.latitude).attr("data-lng",outlet.longitude);
+    $$("#location").attr("src", mapSrc);
+    $$("#location")
+      .attr("data-lat", outlet.latitude)
+      .attr("data-lng", outlet.longitude);
     $$("#locationHint").hide();
   }
 
   if (outlet.address != undefined) {
     $$("#address").val(outlet.address);
   }
+  $$("#scaleSpace").val(
+    outlet.scaleSpace == undefined ? "" : outlet.scaleSpace
+  );
 
-  if (outlet.area != undefined) {
-    setSmartSelectValue("area", outlet.area.id, outlet.area.name);
+  $$("#scaleTableNumber").val(
+    outlet.scaleTableNumber == undefined ? "" : outlet.scaleTableNumber
+  );
+
+  $$("#scaleBoxNumber").val(
+    outlet.scaleBoxNumber == undefined ? "" : outlet.scaleBoxNumber
+  );
+
+  $$("#scaleCashierNumber").val(
+    outlet.scaleCashierNumber == undefined ? "" : outlet.scaleCashierNumber
+  );
+
+  if (outlet.region != undefined) {
+    mma.getCache("r" + outlet.region.parentId).then(function(v) {
+      var city = v;
+      if (city != undefined) {
+        getChildrenRegions(city.id).then(function(v) {
+          var region = v;
+          $$(".sss-region").html(generateOptionWithArray(region, true));
+          setSmartSelectValue("region", outlet.region.id, outlet.region.name);
+          mma.getCache("r" + city.parentId).then(function(v) {
+            var province = v;
+            if (province != undefined) {
+              getChildrenRegions(province.id).then(function(v) {
+                var cities = v;
+                $$(".sss-city").html(generateOptionWithArray(cities, true));
+                setSmartSelectValue("city", city.id, city.name);
+              });
+              setSmartSelectValue("province", province.id, province.name);
+              $$("#province").attr("hock", province.id);
+              mma.getCache("channel").then(function(v) {
+                var channels = v;
+                var channelArray = [];
+                if (province.id == $g.Province.HAINAN) {
+                  $$.each(channels, function(key, item) {
+                    if (item.just4Hainan) {
+                      channelArray.push(item);
+                    }
+                  });
+                } else {
+                  $$.each(channels, function(key, item) {
+                    if (!item.just4Hainan) {
+                      channelArray.push(item);
+                    }
+                  });
+                }
+                $$("#channel").html(
+                  generateOptionWithArray(channelArray, true)
+                );
+                if (outlet.channel != undefined) {
+                  setSmartSelectValue(
+                    "channel",
+                    outlet.channel.id,
+                    outlet.channel.name
+                  );
+                  let scale = outlet.channel.scaleField.split(" ");
+                  mainField.forEach(e => {
+                    if (scale.includes(e.name)) {
+                      e.required = true;
+                      $$("#" + e.name)
+                        .parents(".sameRoot")
+                        .children("p")
+                        .html(e.text + ' <span class="required">*</span>');
+                      $$("#" + e.name)
+                        .parents(".sameRoot")
+                        .show();
+                    }
+                  });
+                }
+              });
+            }
+          });
+        });
+      }
+    });
+
+    $$("#item-wholesaler")
+      .find("a")
+      .attr("regionId", outlet.region.id);
+    $$("#item-dealer")
+      .find("a")
+      .attr("regionId", outlet.region.id);
+    $$("#item-substituteWholesaler")
+      .find("a")
+      .attr("regionId", outlet.region.id);
   }
 
-  if (outlet.province != undefined) {
-    setSmartSelectValue("province", outlet.province.id, outlet.province.name);
-  }
-
-  if (outlet.city != undefined) {
-    setSmartSelectValue("city", outlet.city.id, outlet.city.name);
-  }
-
-  if (outlet.district != undefined) {
-    setSmartSelectValue("district", outlet.district.id, outlet.district.name);
-  }
-
-  if (outlet.eoeChannel != undefined) {
-    setSmartSelectValue(
-      "eoeChannel",
-      outlet.eoeChannel.id,
-      outlet.eoeChannel.name
-    );
-  }
-
-  if (outlet.scale != undefined) {
-    setSmartSelectValue("scale", outlet.scale.id, outlet.scale.name);
-  }
-
-  if (outlet.postCode != undefined) {
-    $$("#postCode").val(outlet.postCode);
-  }
-
-  if (outlet.dinggeNumber != undefined) {
-    $$("#dinggeNumber").val(outlet.dinggeNumber);
+  if (outlet.postalCode != undefined) {
+    $$("#postalCode").val(outlet.postalCode);
   }
 
   if (outlet.pgNumber != undefined) {
@@ -910,59 +974,91 @@ function showValue4Outlet(id) {
     $$("#dbiNumber").val(outlet.dbiNumber);
   }
 
-  if (outlet.boss != undefined) {
-    $$("#boss").val(outlet.boss);
+  if (outlet.owner != undefined) {
+    $$("#owner").val(outlet.owner);
   }
 
-  if (outlet.shopkeeper != undefined) {
-    $$("#shopkeeper").val(outlet.shopkeeper);
+  if (outlet.contactPerson != undefined) {
+    $$("#contactPerson").val(outlet.contactPerson);
   }
 
-  if (outlet.mobile != undefined) {
-    $$("#mobile").val(outlet.mobile);
+  if (outlet.mobileOrTel != undefined) {
+    $$("#mobileOrTel").val(outlet.mobileOrTel);
   }
 
-  if (outlet.phone != undefined) {
-    $$("#phone").val(outlet.phone);
+  if (outlet.telephone != undefined) {
+    $$("#telephone").val(outlet.telephone);
+  }
+
+  if (outlet.averageConsumption != undefined) {
+    $$("#averageConsumption").val(outlet.averageConsumption);
   }
 
   if (outlet.scope != undefined) {
     setSmartSelectValue("scope", outlet.scope.id, outlet.scope.name);
   }
 
-  if (outlet.subScope != undefined) {
-    setSmartSelectValue("subScope", outlet.subScope.id, outlet.subScope.name);
+  if (outlet.chain != undefined) {
+    setSmartSelectValue("chain", outlet.chain.id, outlet.chain.name);
   }
 
-  if (outlet.averageConsumption != undefined) {
+  if (outlet.demographicRegion != undefined) {
     setSmartSelectValue(
-      "averageConsumption",
-      outlet.averageConsumption.id,
-      outlet.averageConsumption.name
+      "demographicRegion",
+      outlet.demographicRegion.id,
+      outlet.demographicRegion.name
     );
   }
 
-  if (outlet.competitorBrands != undefined) {
-    setMultiSmartSelectValue("competitorBrands", outlet.competitorBrands);
-  }
-
-  if (outlet.traffic != undefined) {
-    setSmartSelectValue("traffic", outlet.traffic.id, outlet.traffic.name);
-  }
-
-  if (outlet.agreementsType != undefined) {
+  if (outlet.visitFrequency != undefined) {
     setSmartSelectValue(
-      "agreementsType",
-      outlet.agreementsType.id,
-      outlet.agreementsType.name
+      "visitFrequency",
+      outlet.visitFrequency.id,
+      outlet.visitFrequency.name
     );
   }
 
-  if (outlet.duixiangType != undefined) {
+  if (outlet.dealerType != undefined) {
     setSmartSelectValue(
-      "duixiangType",
-      outlet.duixiangType.id,
-      outlet.duixiangType.name
+      "dealerType",
+      outlet.dealerType.id,
+      outlet.dealerType.name
+    );
+  }
+
+  if (outlet.contractType != undefined) {
+    setSmartSelectValue(
+      "contractType",
+      outlet.contractType.id,
+      outlet.contractType.name
+    );
+  }
+
+  if (outlet.type != undefined) {
+    setSmartSelectValue("type", outlet.type.id, outlet.type.name);
+  }
+
+  if (outlet.wholesaler != undefined) {
+    setDealerSelectValue(
+      "wholesaler ",
+      outlet.wholesaler.id,
+      outlet.wholesaler.code + " " + outlet.wholesaler.name
+    );
+  }
+
+  if (outlet.dealer != undefined) {
+    setDealerSelectValue(
+      "dealer ",
+      outlet.dealer.id,
+      outlet.dealer.code + " " + outlet.dealer.name
+    );
+  }
+
+  if (outlet.substituteWholesaler != undefined) {
+    setDealerSelectValue(
+      "substituteWholesaler ",
+      outlet.substituteWholesaler.id,
+      outlet.substituteWholesaler.code + " " + outlet.substituteWholesaler.name
     );
   }
 
@@ -971,15 +1067,31 @@ function showValue4Outlet(id) {
   }
 
   if (outlet.reopenTimestamp != undefined) {
-    $$("#reopenTimestamp").val(outlet.reopenTimestamp);
+    $$("#item-reopenTimestamp")
+      .parent()
+      .show();
+    $$("#reopenTimestamp").show();
+    $$("#reopenTimestamp").val(timestamp2String(outlet.reopenTimestamp));
+  }
+
+  if (outlet.lastClosedTimestamp != undefined) {
+    $$("#item-lastClosedTimestamp").show();
+    $$("#lastClosedTimestamp").show();
+    $$("#lastClosedTimestamp").val(
+      timestamp2String(outlet.lastClosedTimestamp)
+    );
   }
 
   if (outlet.contractStartTimestamp != undefined) {
-    $$("#contractStartTimestamp").val(outlet.contractStartTimestamp);
+    $$("#contractStartTimestamp").val(
+      timestamp2String(outlet.contractStartTimestamp)
+    );
   }
 
   if (outlet.contractEndTimestamp != undefined) {
-    $$("#contractEndTimestamp").val(outlet.contractEndTimestamp);
+    $$("#contractEndTimestamp").val(
+      timestamp2String(outlet.contractEndTimestamp)
+    );
   }
 }
 

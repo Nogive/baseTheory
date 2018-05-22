@@ -815,13 +815,31 @@ var ajaxSet = {
   before: function(xhr) {
     xhr.setRequestHeader("Authorization", cookie.getCookie("token"));
   },
-  error: function(xhr, text) {
-    mjpApp.hidePreloader();
-    mjpApp.toast(text, "", { duration: 1000 }).show();
+  codeError: function(data, text) {
+    var msg = text + "发生错误，错误码为：" + data.code;
+    showToast(msg);
+  },
+  noData: function(text) {
+    text = text == undefined ? "无法从服务器获取数据" : text;
+    showToast(text + "，请联系管理员");
+  },
+  noDetailData: function() {
+    showToast("无法获取详细数据，请联系管理员");
+  },
+  error: function(xhr) {
+    if (xhr.status) {
+      showToast("发生网络错误，错误码为：" + xhr.status);
+    } else {
+      showToast("未知网络错误, 请确保设备处在联网状态");
+    }
   }
 };
+function showToast(text, duration) {
+  duration = duration == undefined ? 2000 : duration;
+  mjpApp.toast(text, "", { duration: duration }).show();
+}
 var $$ = Dom7;
-var AXIOSCONFIG = {
+var config = {
   headers: { Authorization: cookie.getCookie("token") }
 };
 

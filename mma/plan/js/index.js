@@ -74,7 +74,7 @@ const showTime=10000;
 var onlineDate=new Date();
 var myScroll;
 var [editSubmit,showMarkerName,currentPlan]=[false,true];
-var [frequentMap,dayloadMap,mvoMap,dateMap,dayMap,weekMap]=[[],[],[],[],[],[]];
+var [frequentMap,dayloadMap,mvoMap,dateMap,dayMap,weekMap,workday]=[[],[],[],[],[],[],[]];
 var [factLoad,scaleLoad,preLoad,currentDay,maxDay,clients]=[0,0,0];
 /*----------------------------------------------------------------*/
 

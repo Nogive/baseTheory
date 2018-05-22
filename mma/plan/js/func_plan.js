@@ -154,63 +154,167 @@ function enterDetailPage(id){
 
 /*create page*******************************************************/
 function questPlanInCreate() {
+	initGlobal();
   //mjpApp.showPreloader("正在加载，请稍候。");
   promiseAjax($g.API_URL.PLAN_CREATING.compose(host), "GET", {
     month: getNextMonthTimeStamp(onlineDate)
   }).then(function(value) {
-      if (value.code == $g.API_CODE.OK) {
-      	if(value.data!=undefined&&value.data.length!=0){
-      		currentPlan=value.data;
-      		generateMap(currentPlan);
-      	}else{
-      		mjpApp.toast('暂不允许新建计划,请联系管理员。','',{duration:1500}).show();
-      		mainView.router.back();
-      	}
-      	/*
-        editSchedule = value.data;
-        initGlobalField(editSchedule);
-        $$("#factLoad").text(globalField.factLoad);
-        var month = editSchedule.month;
-        Promise.all([
+  	if(value==undefined){
+  		ajaxSet.noData();
+  	}else if (value.code == $g.API_CODE.OK) {
+	  	if(value.data==undefined){
+	  		showToast("无法获取详细计划数据，请联系管理员");
+	  		mainView.router.back();
+	  	}else{
+	  		currentPlan=value.data;
+	  		initConstantfromPlan(currentPlan);
+	  		Promise.all([
           promiseAjax($g.API_URL.SETTING_WORKDAY.compose(host), "GET", {
-            monthTimestamp: month
+            monthTimestamp: currentPlan.month
           }),
           promiseAjax($g.API_URL.MY_MVO.compose(host), "GET", {})
         ])
-          .then(function([works, mvos]) {
-            if (works.code == $g.API_CODE.OK && mvos.code == $g.API_CODE.OK) {
-              showPage(works, mvos, "create");
-              mjpApp.hidePreloader();
-            } else if (works.code != $g.API_CODE.OK) {
-              throw new Error(works.msg);
-            } else {
-              throw new Error(mvos.msg);
-            }
-          })
-          .catch(function(e) {
-            mjpApp.alert(e, "错误");
-          });
-          */
-      } else {
-        mjpApp.alert("请求计划：" + value.msg, "错误");
-      }
-    },
-    function(err) {
+	      .then(function([works, mvos]) {
+	      	let [wFlag,mFlag]=[false,false];
+	      	if(works==undefined){
+	      		ajax.noData('无法从服务器获取工作日数据');
+	      	}else if(works.code==$g.API_CODE.OK){
+	      		wFlag=true;
+	      		initConstantfromWorks(works.data);
+	      	}else{
+	      		ajax.codeError(works);
+	      	}
+	      	if(mvos==undefined){
+	      		ajax.noData('无法从服务器获取mvo数据');
+	      	}else if(works.code==$g.API_CODE.OK){
+	      		mFlag=true;
+	      		initConstantfromMvos(mvos.data);
+	      	}else{
+	      		ajax.codeError(mvos);
+	      	}
+	      	if(wFlag&&mFlag){
+	      		renderThePage(works.data,mvos.data,'create');
+	      	}
+	        mjpApp.hidePreloader();
+	      })
+	      .catch(function(e) {
+	        ajaxSet.error(e);
+	      });
+	  	}
+    }
+  },function(err) {
       mjpApp.hidePreloader();
-      mjpApp.alert("请求计划失败了，请稍后再试", "错误");
-      console.log(err);
+      ajaxSet.error(err);
     }
   );
 }
-function generateMap(data){
-	console.log(data);
-	[frequentMap,dayloadMap,mvoMap,dateMap,dayMap,weekMap]=[[],[],[],[],[],[]];
+function renderThePage(w,m,page){
+	if (page == "create") {
+    page = "";
+    clients = m.records;
+  } else {
+    page = "Detail";
+    clients = m;
+  }
+  //generateMvoList(clients,page);
+  //generateCalendar(w.monthTimestamp,page);
+  //initLocationMap(page);
+}
+function generateMvoList(clients,page){
+	
+}
+function initGlobal(){
+	[frequentMap,dayloadMap,mvoMap,dateMap,dayMap,weekMap,workday]=[[],[],[],[],[],[],[]];
 	[factLoad,scaleLoad,preLoad,currentDay,maxDay,clients]=[0,0,0];
+}
+function initConstantfromPlan(data){
+	console.log(data);
 	let plan=data.data;
 	plan.forEach(e=>{
-		dayloadMap[e.day]=e.dayCapacity;
-		
+		let timestamp=e.day;
+		let capacity=parseFloat(e.dayCapacity.toFixed(2));//保留两位小数
+		let outlets=e.outlets;
+		dayloadMap[timestamp]=capacity;
+		dayMap[timestamp]=outlets;
+		factLoad+=capacity;
+		outlets.forEach(e=>{
+			let id=e;
+			if(frequentMap[id]==undefined){
+				frequentMap[id]=1;
+			}else{
+				frequentMap[id]+=1;
+			}
+			if(dateMap[id]==undefined){
+				dateMap[id]=[timestamp];
+			}else{
+				dateMap[id].push(timestamp);
+			}
+		})
 	});
+}
+function initConstantfromWorks(w){
+	console.log(w);
+	workday=w.workdays;
+	scaleLoad=w.workingTimePerDay;
+	preLoad=scaleLoad*w.days;
+	let timestamp=w.monthTimestamp;
+	let n=new Date(timestamp)
+	let y=n.getFullYear();//年份
+	let m=n.getMonth();//月
+	let firstDay=new Date(y,m,1).getDay();//当月第一天date
+	maxDay=getMonthAllDay(m, y);
+	let weekNum = Math.ceil((maxDay + firstDay) / 7);
+	for(let i=0;i<weekNum;i++){
+		for(let j=0;j<7;j++){
+			let idx=i*7+j;
+			let d=idx-firstDay+1;
+			if(d>0&&d<=maxDay){
+				let currentTimestamp=new Date(y,m,d).getTime();
+				if(weekMap[i]==undefined){
+					weekMap[i]=[currentTimestamp];
+				}else{
+					weekMap[i].push(currentTimestamp);
+				}
+			}
+		}
+	}
+}
+function initConstantfromMvos(m){
+	console.log(m);
+	let mvos=m.records;
+	if(mvos.length!=0){
+		mvos.forEach(e=>{
+			let id=e.id;
+			mvoMap[id]=e;
+		})
+	}
+}
+
+//get maxDay in month
+function getMonthAllDay(month, year) {
+  var m_days = new Array(
+    31,
+    28 + is_leap(year),
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31
+  );
+  return m_days[month];
+}
+// 是否为闰年
+function is_leap(year) {
+  return year % 100 == 0 ? (year % 400 == 0 ? 1 : 0) : year % 4 == 0 ? 1 : 0;
+}
+//补 0
+function checkNum(i){
+	return i<10?"0"+i:i;
 }
 /*----------------------------------------------------------------*/
 

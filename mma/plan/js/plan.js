@@ -11,14 +11,7 @@ var MENU = {
   draft: { id: 9, name: "保存草稿" }
 };
 var currentPlan;
-var currentAccount={
-	dataScope:[102],
-	employeeId:"2100004",
-	name:"葛伟峰",
-	roleId:10,
-	staffId:117,
-	token:"1de39090-0c2e-4702-9dcb-51210a44898c"
-};
+var currentAccount;
 var currentTab;
 var tabContext = {
   myPlan: {
@@ -39,21 +32,20 @@ var tabContext = {
   }
 };
 mma.setOnActionCallback(function(data) {
-	mainView.router.loadPage("create.html");
-//if (data.id == MENU.create.id) {
-//  globalField.currentPlan == undefined;
-//  mainView.router.loadPage("create.html");
-//} else if (data.id == MENU.submit.id) {
-//  arrangementPlan();
-//} else if (data.id == MENU.draft.id) {
-//  saveToDraft();
-//} else if (data.id == MENU.edit.id) {
-//  mainView.router.loadPage("create.html?id=" + globalField.currentPlan.id);
-//} else if (data.id == MENU.approve.id) {
-//  goApproval(globalField.currentPlan.id, true);
-//} else if (data.id == MENU.deny.id) {
-//  deny(globalField.currentPlan.id);
-//}
+  if (data.id == MENU.create.id) {
+    globalField.currentPlan == undefined;
+    mainView.router.loadPage("create.html");
+  } else if (data.id == MENU.submit.id) {
+    arrangementPlan();
+  } else if (data.id == MENU.draft.id) {
+    saveToDraft();
+  } else if (data.id == MENU.edit.id) {
+    mainView.router.loadPage("create.html?id=" + globalField.currentPlan.id);
+  } else if (data.id == MENU.approve.id) {
+    goApproval(globalField.currentPlan.id, true);
+  } else if (data.id == MENU.deny.id) {
+    deny(globalField.currentPlan.id);
+  }
 });
 //for plan
 var globalField = {
@@ -96,11 +88,11 @@ mjpApp.onPageInit("plan", function(page) {
   var from = GetQueryString("from");
   if (from == "home") {
     mma.setActionMenus(false);
-//  mma.getCache("account").then(function(value) {
-//    currentAccount = value;
-//  });
+    mma.getCache("account").then(function(value) {
+      currentAccount = value;
+    });
   } else {
-    //mma.confirmOnBack(false);
+    mma.confirmOnBack(false);
 
     //下拉刷新事件
     var ptrContent = $$(".pull-to-refresh-content");
@@ -164,7 +156,7 @@ mjpApp.onPageInit("create", function(page) {
     }
     showEditPage(editSchedule);
   }
-  //mma.confirmOnBack(true);
+  mma.confirmOnBack(true);
 
   /*****************隐藏按钮 和清空按钮****************/
   $$("#hideLabel").click(function() {
@@ -187,9 +179,10 @@ mjpApp.onPageInit("create", function(page) {
       globalField.daysLoad = {};
       globalField.factLoad = 0;
       globalField.frequency = {};
+      arrangeDateMap = [];
       $$("#calendar td").removeClass("bg_red bg_orange bg_green");
       $$("#clientList .isFill").removeClass("col_red col_orange col_green");
-      $$("#factLoad").text(globalField.factLoad);
+      $$("#factLoad").text(globalField.factLoad.toFixed(2));
       map.clearMap();
       $$("#planedClient").hide();
     });
@@ -263,10 +256,7 @@ mjpApp.onPageInit("create", function(page) {
       .attr("id")
       .substring(6);
     if (globalField.currentVisableDay == null) {
-      mjpApp.alert(
-        "尚未选择日期，请先在右上角的日历里面选择日期，再进行添加",
-        ""
-      );
+      showToast("尚未选择日期，请先在右上角的日历里面选择日期，再进行添加");
     } else {
       var checkDay = globalField.currentVisableDay;
       var dayTimestamp = Date.parse(
@@ -275,7 +265,7 @@ mjpApp.onPageInit("create", function(page) {
       if (globalField.workdays.includes(dayTimestamp)) {
         arrangePlanInCache(id, checkDay);
       } else {
-        mjpApp.alert("非工作日不允许排班，请另选日期进行安排。", "");
+        showToast("非工作日不允许排班，请另选日期进行安排");
       }
     }
   });
@@ -364,13 +354,21 @@ mjpApp.onPageInit("detail", function(page) {
       .hide();
   });
 });
-mjpApp.onPageReinit("detail", function() {
+mjpApp.onPageReinit("detail", function(page) {
   if (editSubmit) {
     mma.setActionMenus(false);
   } else {
     mma.setActionMenus(true, [MENU.edit]);
   }
   mma.confirmOnBack(false);
+  myScroll = new IScroll("#iscollWrap");
+  mjpApp.showPreloader("正在加载，请稍候。");
+  var planId = page.query.id;
+  if (page.query.from == "home") {
+    mma.setActionMenus(false);
+  }
+  globalField.currentPlan.id = planId;
+  questPlanInDetail(planId);
 });
 mjpApp.init();
 
@@ -386,12 +384,13 @@ function requestRemotePlanListAndUpdate(listApiUrl) {
       xhr.setRequestHeader("Authorization", cookie.getCookie("token"));
     },
     success: function(data, status, xhr) {
-      //onlineDate = new Date(xhr.getResponseHeader("Date"));
-      onlineDate = new Date();
-      if (data.code == $g.API_CODE.OK) {
+      onlineDate = new Date(xhr.getResponseHeader("Date"));
+      if (data == undefined) {
+        ajaxSet.noData("无法从服务器获取拜访计划数据");
+      } else if (data.code == $g.API_CODE.OK) {
         //当有记录且没有下个月的记录，才允许新建
-        //mma.getCache("account").then(function(value) {
-          //currentAccount = value;
+        mma.getCache("account").then(function(value) {
+          currentAccount = value;
           if (currentAccount.roleId == $g.ROLE.SR) {
             $$("#planNav").hide();
             if (data.data == undefined || data.data.length == 0) {
@@ -410,14 +409,15 @@ function requestRemotePlanListAndUpdate(listApiUrl) {
             mma.setActionMenus(false);
           }
           showPlanList(data.data);
-        //});
+        });
       } else {
-        mjpApp.toast("请求计划列表出错", "", { duration: 1000 }).show();
+        ajaxSet.codeError(data, "加载拜访计划");
       }
       mjpApp.hidePreloader();
     },
     error: function(xhr) {
-      ajaxSet.error(xhr, "加载拜访计划数据出错了, 请稍后再试。");
+      mjpApp.hidePreloader();
+      ajaxSet.error(xhr);
     }
   });
 }
@@ -514,10 +514,12 @@ function questPlanInCreate() {
     month: getNextMonthTimeStamp(onlineDate)
   }).then(
     function(value) {
-      if (value.code == $g.API_CODE.OK) {
+      if (value == undefined) {
+        ajaxSet.noData();
+      } else if (value.code == $g.API_CODE.OK) {
         editSchedule = value.data;
         initGlobalField(editSchedule);
-        $$("#factLoad").text(globalField.factLoad);
+        $$("#factLoad").text(globalField.factLoad.toFixed(2));
         var month = editSchedule.month;
         Promise.all([
           promiseAjax($g.API_URL.SETTING_WORKDAY.compose(host), "GET", {
@@ -526,25 +528,45 @@ function questPlanInCreate() {
           promiseAjax($g.API_URL.MY_MVO.compose(host), "GET", {})
         ])
           .then(function([works, mvos]) {
-            if (works.code == $g.API_CODE.OK && mvos.code == $g.API_CODE.OK) {
+            if (works == undefined || mvos == undefined) {
+              ajaxSet.noData();
+            } else if (
+              works.code == $g.API_CODE.OK &&
+              mvos.code == $g.API_CODE.OK
+            ) {
               showPage(works, mvos, "create");
               mjpApp.hidePreloader();
             } else if (works.code != $g.API_CODE.OK) {
-              throw new Error(works.msg);
+              throw new Error(works.code);
             } else {
-              throw new Error(mvos.msg);
+              throw new Error(mvos.code);
             }
           })
           .catch(function(e) {
-            mjpApp.alert(e, "错误");
+            mjpApp.hidePreloader();
+            mjpApp.alert(
+              "加载预排计划出错了，错误码：" + e.status,
+              "",
+              function() {
+                mainView.router.back();
+              }
+            );
           });
       } else {
-        mjpApp.alert("请求计划：" + value.msg, "错误");
+        mjpApp.alert(
+          "加载预排计划出错了，错误码：" + value.code,
+          "",
+          function() {
+            mainView.router.back();
+          }
+        );
       }
     },
     function(err) {
       mjpApp.hidePreloader();
-      mjpApp.alert("请求计划失败了，请稍后再试", "错误");
+      mjpApp.alert("加载预排计划失败了，错误码：" + err.status, "", function() {
+        mainView.router.back();
+      });
       console.log(err);
     }
   );
@@ -571,7 +593,7 @@ function arrangePlanInCache(id, day) {
     }
   }
   if (isRepeat) {
-    mjpApp.alert("该网点本周已有排班", "");
+    showToast("该网点本周已有排班");
   } else {
     var rangeDays = [];
     if (isArrangeAuto(id) > 0) {
@@ -589,7 +611,7 @@ function arrangePlanInCache(id, day) {
     } else {
       rangeDays.push(day);
     }
-    var mvoCapacity = currentClient.visitingTime;
+    var mvoCapacity = parseFloat(currentClient.visitingTime.toFixed(2));
     for (var ed of rangeDays) {
       var isExist = globalField.daysLoad.hasOwnProperty(ed);
       var curDayCapacity = globalField.daysLoad[ed];
@@ -635,7 +657,7 @@ function arrangePlanInCache(id, day) {
         //date
         globalField.factLoad += mvoCapacity;
         var tdBdClass = "bg_" + bgColorOfDay(globalField.daysLoad[ed]);
-        $$("#factLoad").text(globalField.factLoad);
+        $$("#factLoad").text(globalField.factLoad.toFixed(2));
         $$("#day" + ed).addClass(tdBdClass);
         /****************效果部分   end*********************/
       }
@@ -670,6 +692,8 @@ function deleteOneClient(id) {
   var planedDay = editSchedule.data;
   for (var d of planedDay) {
     if (d.day == timestamp) {
+      d.dayCapacity =
+        d.dayCapacity - parseFloat(currentClient.visitingTime.toFixed(2));
       var index = d.outlets.indexOf(id);
       d.outlets.splice(index, 1);
       clientIds = d.outlets;
@@ -681,10 +705,12 @@ function deleteOneClient(id) {
   var newClients = [];
   globalField.frequency[id] = globalField.frequency[id] - 1;
   //实际总负荷
-  globalField.factLoad = globalField.factLoad - currentClient.visitingTime;
+  globalField.factLoad =
+    globalField.factLoad - parseFloat(currentClient.visitingTime.toFixed(2));
   //当天负荷
   globalField.daysLoad[curDay] =
-    globalField.daysLoad[curDay] - currentClient.visitingTime;
+    globalField.daysLoad[curDay] -
+    parseFloat(currentClient.visitingTime.toFixed(2));
   var newBgClass =
     "col_" +
     returnEnoughClass(
@@ -701,7 +727,7 @@ function deleteOneClient(id) {
       newClients.push(c);
     }
   }
-  $$("#factLoad").text(globalField.factLoad);
+  $$("#factLoad").text(globalField.factLoad.toFixed(2));
   var newDayClass =
     globalField.daysLoad[curDay] == 0
       ? ""
@@ -764,35 +790,33 @@ function arrangementPlan() {
       contentType: "application/json; charset=utf-8",
       beforeSend: function(xhr) {
         xhr.setRequestHeader("Authorization", cookie.getCookie("token"));
-        mjpApp.showPreloader("正在安排，请稍后");
+        mjpApp.showPreloader("正在安排，请稍候");
       },
       success: function(data) {
         mjpApp.hidePreloader();
-        if (data.code == $g.API_CODE.OK) {
+        if (data == undefined) {
+          ajaxSet.noData();
+        } else if (data.code == $g.API_CODE.OK) {
           mma.setActionMenus(true, [MENU.submit]);
           editSubmit = true;
-          mjpApp.toast("提交成功", "", { duration: 1000 }).show();
+          showToast("提交计划成功了", 1000);
         } else {
-          mjpApp
-            .toast("提交计划出错了，错误原因：" + data.msg, "", {
-              duration: 1000
-            })
-            .show();
+          ajaxSet(data, "提交拜访计划");
         }
       },
       error: function(xhr) {
-        ajaxSet.error(xhr, "提交计划失败了, 请稍后再试");
+        mjpApp.hidePreloader();
+        ajaxSet.error(xhr);
       }
     });
   } else if (!enough) {
-    mjpApp.alert("仍有网点没有被排班，请确保所有网点都被排班后再提交", "");
+    showToast("仍有网点没有被排班，请确保所有网点都被排班后再提交");
   } else {
-    mjpApp.alert(
+    let msg =
       "本月所排计划负荷低于最低负荷：" +
-        globalField.workdayNum * 6.4 +
-        "，请合理安排后再提交",
-      ""
-    );
+      globalField.workdayNum * 6.4 +
+      "，请合理安排后再提交";
+    showToast(msg);
   }
 }
 //保存为草稿
@@ -818,13 +842,14 @@ function saveToDraft() {
     success: function(data) {
       mjpApp.hidePreloader();
       if (data.code == $g.API_CODE.OK) {
-        mjpApp.toast("保存草稿成功", "", { duration: 1000 }).show();
+        showToast("保存草稿成功");
       } else {
-        mjpApp.toast(`保存草稿出错:${data.msg}`, "", { duration: 1000 }).show();
+        showToast("保存草稿出错");
       }
     },
     error: function(xhr) {
-      ajaxSet.error(xhr, "保存草稿失败了, 请稍后再试");
+      mjpApp.hidePreloader();
+      showToast("保存草稿失败了, 请稍后再试");
     }
   });
 }
@@ -832,7 +857,7 @@ function saveToDraft() {
 function showEditPage(value) {
   mjpApp.showPreloader("正在加载，请稍候");
   initGlobalField(value);
-  $$("#factLoad").text(globalField.factLoad);
+  $$("#factLoad").text(globalField.factLoad.toFixed(2));
   var month = value.month;
   Promise.all([
     promiseAjax($g.API_URL.SETTING_WORKDAY.compose(host), "GET", {
@@ -841,7 +866,9 @@ function showEditPage(value) {
     promiseAjax($g.API_URL.MY_MVO.compose(host), "GET", {})
   ])
     .then(function([works, mvos]) {
-      if (works.code == $g.API_CODE.OK && mvos.code == $g.API_CODE.OK) {
+      if (works == undefined || mvos == undefined) {
+        ajaxSet.noData();
+      } else if (works.code == $g.API_CODE.OK && mvos.code == $g.API_CODE.OK) {
         showPage(works, mvos, "create");
         mjpApp.hidePreloader();
       } else if (works.code != $g.API_CODE.OK) {
@@ -851,7 +878,10 @@ function showEditPage(value) {
       }
     })
     .catch(function(e) {
-      mjpApp.alert(e, "错误");
+      mjpApp.hidePreloader();
+      mjpApp.alert("加载计划失败了，错误码：" + e.status, "", function() {
+        mainView.router.back();
+      });
     });
 }
 /*详情页面*************************************************************************/
@@ -861,9 +891,9 @@ function questPlanInDetail(id) {
       if (value.code == $g.API_CODE.OK) {
         if (value.data == undefined) {
           mjpApp.hidePreloader();
-          mjpApp.toast("该计划已被删除", "", { duration: 1000 }).show();
-          //window.location = "http://mjp.waiqin.co/mma/home/";
-          return;
+          mjpApp.alert("该计划已被删除", "", function() {
+            mainView.router.back();
+          });
         }
         detailSchedule = value.data;
         initGlobalField(detailSchedule);
@@ -879,7 +909,7 @@ function questPlanInDetail(id) {
             }
           }
         }
-        $$("#factLoadDetail").text(globalField.factLoad);
+        $$("#factLoadDetail").text(globalField.factLoad.toFixed(2));
         var month = detailSchedule.month;
         Promise.all([
           promiseAjax($g.API_URL.SETTING_WORKDAY.compose(host), "GET", {
@@ -892,7 +922,9 @@ function questPlanInDetail(id) {
           )
         ])
           .then(function([works, mvos]) {
-            if (
+            if (works == undefined || mvos == undefined) {
+              ajaxSet.noData();
+            } else if (
               works.code == $g.API_CODE.OK &&
               mvos.data.code == $g.API_CODE.OK
             ) {
@@ -906,20 +938,22 @@ function questPlanInDetail(id) {
           })
           .catch(function(e) {
             mjpApp.hidePreloader();
-            mjpApp.alert(e, "错误");
+            mjpApp.alert("加载计划出错了，错误码：" + e.status, "", function() {
+              mainView.router.back();
+            });
           });
       } else {
         mjpApp.hidePreloader();
-        mjpApp
-          .toast("请求计划出错了：" + value.msg, "", { duration: 1000 })
-          .show();
+        mjpApp.alert("加载计划出错了，错误码：" + value.code, "", function() {
+          mainView.router.back();
+        });
       }
     },
     function(err) {
       mjpApp.hidePreloader();
-      mjpApp
-        .toast("请求计划失败了，发生网络错误。", "", { duration: 1000 })
-        .show();
+      mjpApp.alert("加载计划失败了，错误码：" + err.status, "", function() {
+        mainView.router.back();
+      });
     }
   );
 }
@@ -950,23 +984,19 @@ function goApproval(planId, approve, message) {
       mjpApp.showPreloader("正在提交审批结果...");
     },
     success: function(data) {
-      //提交成功
       mjpApp.hidePreloader();
-      if (data.code == $g.API_CODE.OK) {
-        console.log("审批完成");
-        mjpApp.toast("提交审批结果成功", "", { duration: 1000 }).show();
+      if (data == undefined) {
+        ajaxSet.noData();
+      } else if (data.code == $g.API_CODE.OK) {
+        showToast("提交审批结果成功", 1000);
         mainView.router.back();
       } else {
-        mjpApp
-          .toast("提交审批结果出错了, 请稍后再试", "", { duration: 1000 })
-          .show();
+        ajaxSet.codeError(data, "提交审批结果");
       }
     },
     error: function(err) {
       mjpApp.hidePreloader();
-      mjpApp
-        .toast("提交审批结果出错了, 请稍后再试", "", { duration: 1000 })
-        .show();
+      ajaxSet.error(err);
     }
   });
 }
@@ -1210,6 +1240,7 @@ function showPlanedDay(id, page) {
   let html = "";
   let describeTitle = "该网点还未安排拜访计划";
   let days = arrangeDateMap[id];
+  days.sort();
   if (days == undefined || days.length == 0) {
     html = "<li>暂未排班</li>";
   } else {
@@ -1312,8 +1343,8 @@ function initGlobalField(schedule) {
   globalField.staffId = schedule.staff.id;
   for (var d of schedule.data) {
     var day = new Date(d.day).getDate();
-    globalField.daysLoad[day] = d.dayCapacity;
-    globalField.factLoad += d.dayCapacity;
+    globalField.daysLoad[day] = parseFloat(d.dayCapacity.toFixed(2));
+    globalField.factLoad += parseFloat(d.dayCapacity.toFixed(2));
     var outlets = d.outlets;
     for (var o of outlets) {
       globalField.frequency[o] =
