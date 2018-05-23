@@ -842,7 +842,9 @@ var $$ = Dom7;
 var config = {
   headers: { Authorization: cookie.getCookie("token") }
 };
-
+var AXIOSCONFIG = {
+  headers: { Authorization: cookie.getCookie("token") }
+};
 //dealer select plugin
 Framework7.prototype.plugins.dealerSelect = function(app, params) {
   app.onPageBack("dealer-select", function(page) {

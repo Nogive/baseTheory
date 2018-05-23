@@ -74,7 +74,7 @@ const showTime=10000;
 var onlineDate=new Date();
 var myScroll;
 var [editSubmit,showMarkerName,currentPlan]=[false,true];
-var [frequentMap,dayloadMap,mvoMap,dateMap,dayMap,weekMap,workday]=[[],[],[],[],[],[],[]];
+var [frequentMap,dayloadMap,mvoMap,dateMap,dayMap,weekMap,workday,markerMap,timestampMap]=[[],[],[],[],[],[],[],[],[]];
 var [factLoad,scaleLoad,preLoad,currentDay,maxDay,clients]=[0,0,0];
 /*----------------------------------------------------------------*/
 
@@ -139,28 +139,24 @@ mjpApp.onPageInit("create", function(page) {
 
   /*****************隐藏按钮 和清空按钮****************/
   $$("#hideLabel").click(function() {
-    if (globalField.showName) {
+    if (showMarkerName) {
       $$(this).text("显示");
-      globalField.showName = false;
+      showMarkerName = false;
     } else {
       $$(this).text("隐藏");
-      globalField.showName = true;
+      showMarkerName = true;
     }
-    if (globalField.currentVisableDay != null) {
-      var showDay = globalField.currentVisableDay;
-      showPlanedClient(showDay, "create");
+    if (currentDay != undefined) {
+      showPlanedClient(currentDay, "create");
     }
   });
   $$("#clearAll").click(function() {
     mjpApp.confirm("确定清空已经排好的计划?", "提示", function() {
-      var currentPlan = editSchedule;
-      currentPlan.data = [];
-      globalField.daysLoad = {};
-      globalField.factLoad = 0;
-      globalField.frequency = {};
+      //currentPlan.data = [];
+      [frequentMap,dayloadMap,dateMap,dayMap,markerMap,factLoad]=[[],[],[],[],[],0];
       $$("#calendar td").removeClass("bg_red bg_orange bg_green");
       $$("#clientList .isFill").removeClass("col_red col_orange col_green");
-      $$("#factLoad").text(globalField.factLoad);
+      $$("#factLoad").text(factLoad);
       map.clearMap();
       $$("#planedClient").hide();
     });
@@ -171,17 +167,15 @@ mjpApp.onPageInit("create", function(page) {
   var timer = null; //定时器
   $$("#calendar").on("click", "td", function(e) {
     e.stopPropagation();
-    markerMap = {};
+    markerMap=[];
     var isWorkday = $$(this).hasClass("validcolor");
     var day = $$(this).text();
-    var key = $$("#currentMonth").text();
     if (isWorkday) {
-      globalField.currentVisableDay = parseInt(day);
+      let timestamp=timestampMap[day];
+      currentDay=timestamp
       $$("#calendar td").removeClass("today");
       $$(this).addClass("today");
-      $$("#currentDate").text(key + "/" + checkNum(day));
-      $$("#planedClient").attr({ "data-key": key, "data-day": day });
-      showPlanedClient(day, "create");
+      showPlanedClient(timestamp, "create");
       clearTimeout(timer);
       timer = setTimeout(function() {
         $$("#planedClient").hide();
@@ -193,7 +187,11 @@ mjpApp.onPageInit("create", function(page) {
     let id = $$(this)
       .attr("id")
       .substring(6);
+    clearTimeout(timer);
     showPlanedDay(id, "create");
+	  timer = setTimeout(function() {
+	    $$("#planedClient").hide();
+	  }, showTime);
   });
   /***********定时器效果部分 start*********************/
   $$("#cancle").on("click", function() {
@@ -233,24 +231,121 @@ mjpApp.onPageInit("create", function(page) {
       .parents("li")
       .attr("id")
       .substring(6);
-    if (globalField.currentVisableDay == null) {
+    if (currentDay == undefined) {
       mjpApp.alert(
         "尚未选择日期，请先在右上角的日历里面选择日期，再进行添加",
         ""
       );
     } else {
-      var checkDay = globalField.currentVisableDay;
-      var dayTimestamp = Date.parse(
-        $$("#currentMonth").text() + "/" + checkNum(checkDay)
-      );
-      if (globalField.workdays.includes(dayTimestamp)) {
-        arrangePlanInCache(id, checkDay);
+      if (workday.includes(currentDay)) {
+      	arrangeOneClient(id);
       } else {
         mjpApp.alert("非工作日不允许排班，请另选日期进行安排。", "");
       }
     }
   });
 });
+
+/*----------------------------------------------------------------*/
+
+/*detail page******************************************************/
+mjpApp.onPageInit("detail", function(page) {
+  myScroll = new IScroll("#iscollWrap");
+  //mjpApp.showPreloader("正在加载，请稍候。");
+  var planId = page.query.id;
+  if (page.query.from == "home") {
+    mma.setActionMenus(false);
+  }
+  //mma.confirmOnBack(false);
+  questPlanInDetail(planId);
+
+  /*****************隐藏按钮****************/
+  $$("#hideLabelDetail").click(function() {
+    if (showMarkerName) {
+      $$(this).text("显示");
+      showMarkerName = false;
+    } else {
+      $$(this).text("隐藏");
+      showMarkerName = true;
+    }
+    if (currentDay != undefined) {
+      showPlanedClient(currentDay, "detail");
+    }
+  });
+  /*****************隐藏按钮end****************/
+
+  //点击某个日期
+  var timer = null; //定时器
+  $$("#calendarDetail").on("click", "td", function(e) {
+    e.stopPropagation();
+    var isWorkday = $$(this).hasClass("validcolor");
+    var day = $$(this).text();
+    if (isWorkday) {
+    	let timestamp=timestampMap[day];
+    	currentDay=timestamp;
+      $$("#calendarDetail td").removeClass("today");
+      $$(this).addClass("today");
+      showPlanedClient(timestamp, "detail");
+      clearTimeout(timer);
+      timer = setTimeout(function() {
+        $$("#planedClientDetail").hide();
+      }, showTime);
+    }
+  });
+  //点击某个MVO
+  $$("#clientListDetail").on("click", "li", function() {
+    let id = $$(this)
+      .attr("id")
+      .substring(6);
+	  clearTimeout(timer);
+	  showPlanedDay(id, "detail");
+	  timer = setTimeout(function() {
+	    $$("#planedClientDetail").hide();
+	  }, showTime);
+  });
+
+  /***********定时器效果部分 start*********************/
+  $$("#cancleDetail").on("click", function() {
+    $$(this)
+      .parent()
+      .hide();
+  });
+  $$("#planedClientDetail").on("click", function(e) {
+    e.stopPropagation();
+  });
+  $$("#planedClientDetail").on("touchstart", function() {
+    clearTimeout(timer);
+  });
+  $$("#planedClientDetail").on("touchend", function() {
+    timer = setTimeout(function() {
+      $$("#planedClientDetail").hide();
+    }, showTime);
+  });
+  /***********定时器效果部分 end*********************/
+  $$("body").on("click", "#reject", function() {
+    $$("#reject")
+      .removeClass("red")
+      .next()
+      .hide();
+  });
+});
+mjpApp.onPageReinit("detail", function(page) {
+  if (editSubmit) {
+    mma.setActionMenus(false);
+  } else {
+    mma.setActionMenus(true, [MENU.edit]);
+  }
+  mma.confirmOnBack(false);
+  myScroll = new IScroll("#iscollWrap");
+  mjpApp.showPreloader("正在加载，请稍候。");
+  var planId = page.query.id;
+  if (page.query.from == "home") {
+    mma.setActionMenus(false);
+  }
+  globalField.currentPlan.id = planId;
+  questPlanInDetail(planId);
+});
+
 mjpApp.init();
 /*----------------------------------------------------------------*/
 
