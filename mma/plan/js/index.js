@@ -9,21 +9,22 @@ var MENU = {
   deny: { id: 6, name: "拒绝审批" },
   submit: { id: 7, name: "提交" }
 };
-mma.setOnActionCallback(function(data) {
-	mainView.router.loadPage("create.html");
+//mma.setOnActionCallback(function(data) {
 //if (data.id == MENU.create.id) {
-//  currentPlanId == undefined;
+//  globalField.currentPlan == undefined;
 //  mainView.router.loadPage("create.html");
 //} else if (data.id == MENU.submit.id) {
-//  arrangementPlan();
+//  submitPlan();
+//} else if (data.id == MENU.draft.id) {
+//  saveToDraft();
 //} else if (data.id == MENU.edit.id) {
-//  mainView.router.loadPage("create.html?id=" + currentPlanId);
+//  mainView.router.loadPage("create.html?id=" + globalField.currentPlan.id);
 //} else if (data.id == MENU.approve.id) {
-//  goApproval(currentPlanId, true);
+//  goApproval(currentPlan.id, true);
 //} else if (data.id == MENU.deny.id) {
-//  deny(currentPlanId);
+//  deny(currentPlan.id);
 //}
-});
+//});
 var mjpApp = new Framework7({
   init: false,
   //允许webAPP记录URL，以便回退
@@ -112,6 +113,11 @@ mjpApp.onPageInit("plan", function(page) {
     var id = $$(this).attr("id");
     enterDetailPage(id);
   });
+  
+  //TODO:delete
+  mma.setOnActionCallback(function(data) {
+		mainView.router.loadPage("create.html");
+	});
 });
 mjpApp.onPageReinit("plan", function(page) {
   //mma.confirmOnBack(false);
@@ -127,13 +133,12 @@ mjpApp.onPageInit("create", function(page) {
     mma.setActionMenus(true, [MENU.submit, MENU.draft]);
     questPlanInCreate();
   } else {
-    editSchedule = detailSchedule;
-    if (editSchedule.state == "draft") {
+    if (currentPlan.state == "draft") {
       mma.setActionMenus(true, [MENU.submit, MENU.draft]);
     } else {
       mma.setActionMenus(true, [MENU.submit]);
     }
-    showEditPage(editSchedule);
+    questForEdit(currentPlan);
   }
   //mma.confirmOnBack(true);
 
@@ -244,6 +249,11 @@ mjpApp.onPageInit("create", function(page) {
       }
     }
   });
+  
+  //TODO:delete
+  mma.setOnActionCallback(function(data) {
+		submitPlan();
+	});
 });
 
 /*----------------------------------------------------------------*/
@@ -328,6 +338,11 @@ mjpApp.onPageInit("detail", function(page) {
       .next()
       .hide();
   });
+  
+  //TODO:delete
+  mma.setOnActionCallback(function(data) {
+		mainView.router.loadPage("create.html?id=" + currentPlan.id);
+	});
 });
 mjpApp.onPageReinit("detail", function(page) {
   if (editSubmit) {

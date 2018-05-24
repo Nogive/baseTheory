@@ -57,9 +57,6 @@ a{
 	vertical-align: middle;
 	font-weight: bold;
 }
-.validcolor{
-	background: rgb(254,247,231);
-}
 .clientlist{
 	width: 346px;
 	height: 100%;
@@ -181,6 +178,9 @@ a.cancleModel{
 }
 .bg_red{
 	background: inherit;
+}
+.validcolor{
+	background: rgb(254,247,231);
 }
 .bg_orange{
 	background: #ff9500;

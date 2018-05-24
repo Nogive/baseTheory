@@ -321,13 +321,12 @@ function arrangeOneClient(id){
 			let ms=intervalDays*24 * 3600 * 1000
 			arrangeDays.push(timestamp);
 			let visitNum=1;	
-			while(visitNum<frequentNum){
+			let maxTimestamp=new Date(timestamp).setDate(maxDay);
+			while(visitNum<frequentNum&&timestamp<=maxTimestamp){
 				timestamp+=ms;
 				if(workday.includes(timestamp)){
 					arrangeDays.push(timestamp);
 					visitNum++;
-				}else{
-					timestamp+=ms;
 				}
 			}
 		}else{
@@ -438,7 +437,7 @@ function deleteOneClient(id) {
   markerMap[id].hide();
 }
 
-// show planed
+// show planed date
 function showPlanedDay(id, page) {
   page = page == "create" ? "" : "Detail";
   let client=mvoMap[id];
@@ -464,13 +463,13 @@ function showPlanedDay(id, page) {
   $$("#planedClient" + page).show();
 }
 
-
+//show planed mvo
 function showPlanedClient(timestamp,page){
 	page = page == "create" ? "" : "Detail";
 	let html="";
 	let thisLoad=0;
 	let ids=[];
-	if(dayMap[timestamp]!=undefined){
+	if(dayMap[timestamp]!=undefined&&dayMap[timestamp].length>0){
 		ids=dayMap[timestamp];
 		thisLoad=dayloadMap[timestamp];
 		html=generateArrangedMvo(ids,page);
@@ -491,6 +490,7 @@ function showPlanedClient(timestamp,page){
 		})
   }
 }
+
 //已安排的 in some day
 function generateArrangedMvo(ids,page){
 	let html="";
@@ -588,6 +588,7 @@ function keep2Decimal(number){
 	return parseFloat(number.toFixed(2));
 }
 
+//generate mvo list
 function generateMvoList(clients,page){
 	let mvoTotal=0;//mvo 个数
 	let html="";
@@ -629,7 +630,8 @@ function generateMvoList(clients,page){
   $$("#mvoTotal" + page).text(mvoTotal);
   $$("#clientList" + page).html(html);
 }
-//根据拜访是否满足进行分类
+
+//根据拜访是否满足进行分类 
 function sortClientByFrequency(list) {
   let redList = [];
   let orangeList = [];
@@ -663,6 +665,7 @@ function getColorOfMVO(id,num){
   }
   return eClass;
 };
+
 //拜访频率id 对应次数
 function getFrequentNumByFrequentId(id){
 	let num = 0;
@@ -733,6 +736,7 @@ function getColorOfDate(load){
   return eClass;
 };
 
+//init map
 function initLocationMap(page){
 	map = new AMap.Map("container" + page, {
     resizeEnable: true,
@@ -745,6 +749,8 @@ function initGlobal(){
 	[frequentMap,dayloadMap,mvoMap,dateMap,dayMap,weekMap,workday,timestampMap]=[[],[],[],[],[],[],[],[]];
 	[factLoad,scaleLoad,preLoad,currentDay,maxDay,clients,currentPlan]=[0,0,0];
 }
+
+//init constant by plan
 function initConstantfromPlan(data){
 	console.log(data);
 	let plan=data.data;
@@ -770,6 +776,8 @@ function initConstantfromPlan(data){
 		})
 	});
 }
+
+//init constant by workday
 function initConstantfromWorks(w){
 	console.log(w);
 	workday=w.workdays;
@@ -798,6 +806,8 @@ function initConstantfromWorks(w){
 		}
 	}
 }
+
+//init constant by mvos
 function initConstantfromMvos(m){
 	console.log(m);
 	let mvos=m.records==undefined?m:m.records;
@@ -827,13 +837,250 @@ function getMonthAllDay(month, year) {
   );
   return m_days[month];
 }
+
 // 是否为闰年
 function is_leap(year) {
   return year % 100 == 0 ? (year % 400 == 0 ? 1 : 0) : year % 4 == 0 ? 1 : 0;
 }
+
 //补 0
 function checkNum(i){
 	return i<10?"0"+i:i;
+}
+/*----------------------------------------------------------------*/
+
+
+/*approve && deny**************************************************/
+function goApproval(planId, approve, message) {
+  if (message == undefined) {
+    var approveData = {
+      month: globalField.currentMonth,
+      staffId: globalField.staffId,
+      approved: approve
+    };
+  } else {
+    var approveData = {
+      month: globalField.currentMonth,
+      staffId: globalField.staffId,
+      approved: approve,
+      reason: message
+    };
+  }
+  mjpApp.closeModal();
+  $$.ajax({
+    url: $g.API_URL.PLAN_APPROVING.compose(host),
+    type: "PUT",
+    data: approveData,
+    dataType: "json",
+    beforeSend: function(xhr) {
+      xhr.setRequestHeader("Authorization", cookie.getCookie("token"));
+      mjpApp.showPreloader("正在提交审批结果...");
+    },
+    success: function(data) {
+      mjpApp.hidePreloader();
+      if (data == undefined) {
+        ajaxSet.noData();
+      } else if (data.code == $g.API_CODE.OK) {
+        showToast("提交审批结果成功", 1000);
+        mainView.router.back();
+      } else {
+        ajaxSet.codeError(data, "提交审批结果");
+      }
+    },
+    error: function(err) {
+      mjpApp.hidePreloader();
+      ajaxSet.error(err);
+    }
+  });
+}
+function deny(planId) {
+  mjpApp.modal({
+    title: "<b>审批</b>",
+    text:
+      '<div class="item-content">' +
+      "<p>请填写驳回理由</p>" +
+      '<div class="item-inner">' +
+      '<div class="item-input marb10">' +
+      '<textarea class="rejectbox" id="reject"></textarea>' +
+      '<span class="color-red disnone">* 请输入驳回理由。</span>' +
+      "</div>" +
+      "</div>" +
+      "</div>",
+    afterText:
+      '<a href="javascript:;" class="cancleModel icon" id="cancelApprove">close</a>',
+    buttons: [
+      {
+        text: "取消",
+        close: false,
+        onClick: function() {
+          mjpApp.closeModal();
+        }
+      },
+      {
+        text: "确定",
+        close: false,
+        onClick: function() {
+          var rejectText = $$("#reject").val();
+          if (rejectText == "") {
+            $$("#reject")
+              .addClass("red")
+              .next()
+              .show();
+          } else {
+            goApproval(planId, false, rejectText);
+          }
+        }
+      }
+    ]
+  });
+}
+/*----------------------------------------------------------------*/
+
+/*for edit ********************************************************/
+function questForEdit(detailPlan){
+	mjpApp.showPreloader("正在加载，请稍候");
+  initGlobal();
+  currentPlan=detailPlan;
+  initConstantfromPlan(currentPlan);
+  Promise.all([
+    promiseAjax($g.API_URL.SETTING_WORKDAY.compose(host), "GET", {
+      monthTimestamp: currentPlan.month
+    }),
+    promiseAjax($g.API_URL.MY_MVO.compose(host), "GET", {})
+  ])
+	.then(function([works, mvos]) {
+	  let [wFlag,mFlag]=[false,false];
+  	if(works==undefined){
+  		ajax.noData('无法从服务器获取工作日数据');
+  	}else if(works.code==$g.API_CODE.OK){
+  		wFlag=true;
+  		initConstantfromWorks(works.data);
+  	}else{
+  		ajax.codeError(works);
+  	}
+  	if(mvos==undefined){
+  		ajax.noData('无法从服务器获取mvo数据');
+  	}else if(mvos.code==$g.API_CODE.OK){
+  		mFlag=true;
+  		initConstantfromMvos(mvos.data);
+  	}else{
+  		ajax.codeError(mvos);
+  	}
+  	if(wFlag&&mFlag){
+  		renderThePage(works.data,mvos.data,'create');
+  	}
+    mjpApp.hidePreloader();
+	})
+	.catch(function(e) {
+	  mjpApp.hidePreloader();
+	  mjpApp.alert("加载计划失败了，错误码：" + e.status, "", function() {
+	    mainView.router.back();
+	  });
+	});
+}
+
+/*----------------------------------------------------------------*/
+
+/*submit && save draft*********************************************/
+function submitPlan(){
+	let [enough,fullLoad]=[true,true];
+	mvoMap.forEach((e,i)=>{
+		if((frequentMap[i]==undefined||frequentMap[i]==0)&&e.state.id!=$g.OUTLET_STATE.PAUSE){
+			enough=false;
+		}
+	})
+	if (enough && fullLoad) {
+		let subData=getPlanDataForSubmit(true);
+		console.log(subData);
+    $$.ajax({
+      url: $g.API_URL.PLAN_EDITING.compose(host),
+      type: "PUT",
+      dataType: "json",
+      data: JSON.stringify(subData),
+      contentType: "application/json; charset=utf-8",
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("Authorization", cookie.getCookie("token"));
+        mjpApp.showPreloader("正在安排，请稍候");
+      },
+      success: function(data) {
+        mjpApp.hidePreloader();
+        if (data == undefined) {
+          ajaxSet.noData();
+        } else if (data.code == $g.API_CODE.OK) {
+          mma.setActionMenus(true, [MENU.submit]);
+          editSubmit = true;
+          showToast("提交计划成功了", 1000);
+        } else {
+          ajaxSet(data, "提交拜访计划");
+        }
+      },
+      error: function(xhr) {
+        mjpApp.hidePreloader();
+        ajaxSet.error(xhr);
+      }
+    });
+  } else if (!enough) {
+    showToast("仍有网点没有被排班，请确保所有网点都被排班后再提交");
+  } else {
+    let msg =
+      "本月所排计划负荷低于最低负荷：" +
+      preLoad +
+      "，请合理安排后再提交";
+    showToast(msg);
+  }
+	
+}
+
+function getPlanDataForSubmit(flag){
+	let dataArr=[];
+	let data={
+		id:currentPlan.id,
+		month: currentPlan.month,
+    staffId: currentPlan.staff.id,
+	};
+	if(flag){
+		data.draft=false;
+	}else{
+		data.draft=true;
+	}
+	workday.forEach(e=>{
+		let obj={
+			day:e,
+			outlets:dayMap[e],
+			dayCapacity:dayloadMap[e]
+		}
+		dataArr.push(obj);
+	})
+	data.data=dataArr;
+	return data;
+}
+
+//保存为草稿
+function saveToDraft() {
+  let subDate = getPlanDataForSubmit(false);
+  $$.ajax({
+    url: $g.API_URL.PLAN_EDITING.compose(host),
+    type: "PUT",
+    dataType: "json",
+    data: JSON.stringify(subDate),
+    contentType: "application/json; charset=utf-8",
+    beforeSend: function(xhr) {
+      xhr.setRequestHeader("Authorization", cookie.getCookie("token"));
+      mjpApp.showPreloader("正在保存，请稍后");
+    },
+    success: function(data) {
+      mjpApp.hidePreloader();
+      if (data.code == $g.API_CODE.OK) {
+        showToast("保存草稿成功");
+      } else {
+        showToast("保存草稿出错");
+      }
+    },
+    error: function(xhr) {
+      mjpApp.hidePreloader();
+      showToast("保存草稿失败了, 请稍后再试");
+    }
+  });
 }
 /*----------------------------------------------------------------*/
 
