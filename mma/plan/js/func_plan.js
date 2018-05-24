@@ -437,7 +437,7 @@ function deleteOneClient(id) {
   markerMap[id].hide();
 }
 
-// show planed date
+// show planed
 function showPlanedDay(id, page) {
   page = page == "create" ? "" : "Detail";
   let client=mvoMap[id];
@@ -463,7 +463,7 @@ function showPlanedDay(id, page) {
   $$("#planedClient" + page).show();
 }
 
-//show planed mvo
+
 function showPlanedClient(timestamp,page){
 	page = page == "create" ? "" : "Detail";
 	let html="";
@@ -490,7 +490,6 @@ function showPlanedClient(timestamp,page){
 		})
   }
 }
-
 //已安排的 in some day
 function generateArrangedMvo(ids,page){
 	let html="";
@@ -588,7 +587,6 @@ function keep2Decimal(number){
 	return parseFloat(number.toFixed(2));
 }
 
-//generate mvo list
 function generateMvoList(clients,page){
 	let mvoTotal=0;//mvo 个数
 	let html="";
@@ -630,8 +628,7 @@ function generateMvoList(clients,page){
   $$("#mvoTotal" + page).text(mvoTotal);
   $$("#clientList" + page).html(html);
 }
-
-//根据拜访是否满足进行分类 
+//根据拜访是否满足进行分类
 function sortClientByFrequency(list) {
   let redList = [];
   let orangeList = [];
@@ -665,7 +662,6 @@ function getColorOfMVO(id,num){
   }
   return eClass;
 };
-
 //拜访频率id 对应次数
 function getFrequentNumByFrequentId(id){
 	let num = 0;
@@ -736,7 +732,6 @@ function getColorOfDate(load){
   return eClass;
 };
 
-//init map
 function initLocationMap(page){
 	map = new AMap.Map("container" + page, {
     resizeEnable: true,
@@ -749,8 +744,6 @@ function initGlobal(){
 	[frequentMap,dayloadMap,mvoMap,dateMap,dayMap,weekMap,workday,timestampMap]=[[],[],[],[],[],[],[],[]];
 	[factLoad,scaleLoad,preLoad,currentDay,maxDay,clients,currentPlan]=[0,0,0];
 }
-
-//init constant by plan
 function initConstantfromPlan(data){
 	console.log(data);
 	let plan=data.data;
@@ -776,8 +769,6 @@ function initConstantfromPlan(data){
 		})
 	});
 }
-
-//init constant by workday
 function initConstantfromWorks(w){
 	console.log(w);
 	workday=w.workdays;
@@ -806,8 +797,6 @@ function initConstantfromWorks(w){
 		}
 	}
 }
-
-//init constant by mvos
 function initConstantfromMvos(m){
 	console.log(m);
 	let mvos=m.records==undefined?m:m.records;
@@ -837,12 +826,10 @@ function getMonthAllDay(month, year) {
   );
   return m_days[month];
 }
-
 // 是否为闰年
 function is_leap(year) {
   return year % 100 == 0 ? (year % 400 == 0 ? 1 : 0) : year % 4 == 0 ? 1 : 0;
 }
-
 //补 0
 function checkNum(i){
 	return i<10?"0"+i:i;
@@ -850,7 +837,7 @@ function checkNum(i){
 /*----------------------------------------------------------------*/
 
 
-/*approve && deny**************************************************/
+/*approve deny*****************************************************/
 function goApproval(planId, approve, message) {
   if (message == undefined) {
     var approveData = {
@@ -981,8 +968,9 @@ function questForEdit(detailPlan){
 
 /*----------------------------------------------------------------*/
 
-/*submit && save draft*********************************************/
+/*submit   save draft**********************************************/
 function submitPlan(){
+	console.log(currentPlan);
 	let [enough,fullLoad]=[true,true];
 	mvoMap.forEach((e,i)=>{
 		if((frequentMap[i]==undefined||frequentMap[i]==0)&&e.state.id!=$g.OUTLET_STATE.PAUSE){
@@ -1030,7 +1018,6 @@ function submitPlan(){
   }
 	
 }
-
 function getPlanDataForSubmit(flag){
 	let dataArr=[];
 	let data={
