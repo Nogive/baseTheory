@@ -63,8 +63,7 @@ const router=new vueRouter({
 		{
 			path:'/second',
 			name:'second title',
-			component:second,
-			alias:'/gogo'
+			component:second
 		},
 		{
 			path:'/aaa/:id',
@@ -106,7 +105,6 @@ new Vue({
 					<li><router-link to="third">third</router-link></li>
 				</ul>
 				<li><router-link to="/second">Second</router-link></li>
-				<li><router-link to="/gogo">gogo</router-link></li>
 				<li><router-link to="/aaa/333">aaa</router-link></li>
 				<li><router-link to="/bbb/456">bbb</router-link></li>
 				<li><router-link to="/ccc/001">ccc</router-link></li>
