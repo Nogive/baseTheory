@@ -12,3 +12,7 @@ import Vue from 'vue'
 //template: '<App/>'
 //})
 import Router from './Router'
+// import transition from './transition.vue'
+// new Vue({
+//     render:xx=>xx(transition)
+// }).$mount('#app');
