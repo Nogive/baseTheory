@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../assets/js/vue.js"></script>
+    <title>extends option</title>
+</head>
+<body>
+    <h1>extends option</h1>
+    <hr>
+    <div id="app">
+      <p>{{count}}--${count}</p>
+      <p><button @click="add">add</button></p>
+    </div>
+
+    <script type="text/javascript">
+      var extendsObj={
+        updated:function(){
+          console.log('我是扩展的updated');
+        },
+        methods:{
+          add:function(){
+            console.log('我是扩展出来的方法');
+            this.count++;
+          }
+        }
+      }
+
+      var app=new Vue({
+        el:'#app',
+        data:{
+          count:14
+        },
+        methods:{
+          add:function(){
+            console.log('我是原生的方法');
+            this.count++;
+          }
+        },
+        updated:function(){
+          console.log('我是原生的update');
+        },
+        extends:extendsObj,
+        delimiters:['${','}']//自定义插值形式
+      });
+      //扩展出来的updated先执行 原生的后执行
+      //扩展的方法若跟原生的名称一样，则不执行
+    </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../assets/js/vue.js"></script>
+    <title>component-3 父子组件关系</title>
+</head>
+<body>
+    <h1>component-3 父子组件关系</h1>
+    <hr>
+    <div id="app">
+        <panda></panda>
+    </div>
+
+    <script type="text/javascript">
+       var city={
+        template:`<div style="color:green;">sichuan of China</div>`
+      }
+
+      //在外面声明局部组件
+      var pandaComponent={
+        template:`
+          <div>
+              <p>Panda from China!</p>
+              <city></city>
+          </div>
+        `,
+        //子组件  （若报错找不到，检查编写顺序是否正确）
+        components:{
+          'city':city
+        }
+      }
+      
+      var app=new Vue({
+          el:'#app',
+          data:{
+            message:'China'
+          },
+          components:{
+            "panda":pandaComponent
+          }
+      })
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../assets/js/vue.js"></script>
+    <title>mixins 混入 option</title>
+</head>
+<body>
+    <h1>mixins 混入 option</h1>
+    <hr>
+    <div id="app">
+      <p>{{count}}</p>
+      <p><button @click="add">add</button></p>
+    </div>
+
+    <script type="text/javascript">
+      //基本写法
+      var addConsole={
+        updated:function(){
+          console.log('数据发生变化，变化成了：'+this.count);
+        }
+      };
+      //全局
+      Vue.mixin({
+        updated:function(){
+          console.log('我是全局的混入'+app.count);
+        }
+      });
+
+      var app=new Vue({
+        el:'#app',
+        data:{
+          count:14
+        },
+        methods:{
+          add:function(){
+            this.count++;
+          }
+        },
+        updated:function(){
+          console.log('我是原生的update');
+        },
+        mixins:[addConsole]
+      });
+      //全局的混入限制性，然后混入的执行，原生的最后执行
+    </script>
+</body>
+</html>

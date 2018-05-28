@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../assets/js/vue.js"></script>
+    <title>computed option</title>
+</head>
+<body>
+    <h1>computed option</h1>
+    <hr>
+    <div id="app">
+      <p>{{newPrice}}</p><!-- 切记:此时要用到的是新的值 -->
+      <ol>
+        <li v-for="item in newList">{{item.title}}--{{item.date}}</li>
+      </ol>
+    </div>
+
+    <script type="text/javascript">
+      var list=[
+        {
+          title:'这里是标题111',
+          date:'2017/3/24'
+        },
+        {
+          title:'这里是标题222',
+          date:'2017/3/25'
+        },
+        {
+          title:'这里是标题333',
+          date:'2017/3/25'
+        },
+        {
+          title:'这里是标题444',
+          date:'2017/3/26'
+        }
+      ]
+      var app=new Vue({
+          el:'#app',
+          data:{
+            price:100,
+            list:list
+          },
+          computed:{
+            newPrice:function(){
+              return this.price=`￥${this.price}元`;
+            },
+            newList:function(){
+              return this.list.reverse();
+            }
+          }
+      })
+      //computed：不污染原始数据的情况下，讲数据输出为想要的方式
+    </script>
+</body>
+</html>

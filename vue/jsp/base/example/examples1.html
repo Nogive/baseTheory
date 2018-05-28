@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../assets/js/vue.js"></script>
+    <script type="text/javascript" src="../assets/js/jquery-3.1.1.min.js"></script>
+    <title>example-1 实例属性 demo</title>
+</head>
+<body>
+    <h1>example-1 实例属性 demo</h1>
+    <hr>
+    <div id="app">
+        {{message}}
+    </div>
+
+    <script type="text/javascript">
+        var app=new Vue({
+            el:'#app',
+            data:{
+                message:'hello Vue!'
+            },
+            //挂载
+            mounted:function(){
+                $('#app').html('我是jquery~~');
+            },
+            methods:{
+                add:function(){
+                    console.log('调用了构造器内部的add方法');
+                }
+            }
+        })
+        //jquery只能在mounted和updated中用
+
+        //在外部调用方法
+        app.add();
+    </script>
+</body>
+</html>

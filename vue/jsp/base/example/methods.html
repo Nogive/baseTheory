@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../assets/js/vue.js"></script>
+    <title>methods option</title>
+</head>
+<body>
+    <h1>methods option</h1>
+    <hr>
+    <div id="app">
+      <p>{{count}}</p>
+      <p><button @click="addeve(2,$event)">+(mouseevent)</button></p>
+      <p><button @click="add(2)">+</button></p>
+
+      <p><btn @click.native="add(5)"></btn></p>
+      <!-- 组件调用methods里的方法 -->
+    </div>
+    <button onclick="app.add(10)">外部add</button>
+    <!-- 外部调用methods里的方法 -->
+
+    <script type="text/javascript">
+      var btn={
+        template:`<button>组件btn</button>`
+      }
+      var app=new Vue({
+        el:'#app',
+        data:{
+          count:1
+        },
+        components:{
+          'btn':btn
+        },
+        methods:{
+          //event 包括了鼠标点击的一些事件
+          addeve:function(num,event){
+            console.log(event);
+            if(num!=""){
+              this.count+=num;
+            }else{
+              this.count++;
+            }
+          },
+          //方法传值
+          add:function(num){
+            if(num!=""){
+              this.count+=num;
+            }else{
+              this.count++;
+            }
+          }
+        }
+      })
+    </script>
+</body>
+</html>
