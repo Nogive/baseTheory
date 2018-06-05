@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <Loading></Loading>
     <img src="./assets/logo.png">
     <mt-header title="多个按钮">
       <div slot="left">

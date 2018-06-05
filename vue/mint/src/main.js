@@ -3,7 +3,8 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-
+import Loading from './components/loading'
+Vue.use(Loading);
 Vue.config.productionTip = false
 
 //全局引用
