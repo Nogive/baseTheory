@@ -3,6 +3,7 @@
     <h1>高德 SDK</h1>
     <router-link to="/position">定位</router-link>
     <router-link to="/drag">拖拽选点</router-link>
+    <router-link to="/test">测试</router-link>
     <hr>
     <router-view/>
   </div>

@@ -2,7 +2,7 @@ import Vue from "vue";
 import Router from "vue-router";
 import position from "@/pages/Position.vue";
 import drag from "@/pages/DragPage.vue";
-
+import test from "@/pages/Test.vue";
 Vue.use(Router);
 
 export default new Router({
@@ -19,6 +19,11 @@ export default new Router({
       path: "/drag",
       name: "drag",
       component: drag
+    },
+    {
+      path: "/test",
+      name: "test",
+      component: test
     }
   ]
 });
