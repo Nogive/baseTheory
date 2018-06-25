@@ -3,8 +3,7 @@
     <p>{{msg}}</p>
     <p>{{shotAddr}}</p>
     <p>{{address}}</p>
-    <mmMap :center="center" @position="getPosition" :positionAgain="positionAgain"></mmMap>
-    <button @click="positionByHand">手动定位</button>
+    <mmMap :center="center" @position="getPosition"></mmMap>
   </div>
 </template>
 <script>
@@ -19,8 +18,7 @@ export default {
       msg:'自动获取位置',
       center:[121.473658,31.230378],
       shotAddr:'',
-      address:'',
-      positionAgain:false
+      address:''
     }
   },
   methods:{
@@ -29,9 +27,6 @@ export default {
       this.positionAgain=false;
       this.shotAddr=data.aois[0].name;
       this.address=data.formattedAddress;
-    },
-    positionByHand(){
-      this.positionAgain=true;
     }
   }
 }

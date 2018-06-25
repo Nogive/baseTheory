@@ -2,7 +2,7 @@
   <div id="app">
     <h1>高德 SDK</h1>
     <router-link to="/position">定位</router-link>
-    <router-link to="/">拖拽选点</router-link>
+    <router-link to="/drag">拖拽选点</router-link>
     <hr>
     <router-view/>
   </div>
@@ -22,5 +22,8 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+*{
+  box-sizing: border-box;
 }
 </style>

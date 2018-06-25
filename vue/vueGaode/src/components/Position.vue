@@ -9,7 +9,7 @@ import remoteLoad from '@/utils/remoteLoad'
 import {mapKey} from '@/common/constant'
 export default {
   name: 'position',
-  props:['center','positionAgain'],
+  props:['center'],
   data () {
     return {
       AMapUI: null,
@@ -17,17 +17,9 @@ export default {
       map:null
     }
   },
-  mounted(){
-    console.log(this.positionAgain);
-  },
   watch:{
     map:function(){
       if(this.map!=null){
-        this.startLocate();
-      }
-    },
-    positionAgain:function(){
-      if(this.positionAgain){
         this.startLocate();
       }
     }
@@ -67,7 +59,7 @@ export default {
       });
     }
   },
-  async created () {
+  async mounted () {
     // 已载入高德地图API，则直接初始化地图
     if (window.AMap && window.AMapUI) {
       this.initMap()
