@@ -2,6 +2,7 @@
   <div id="app">
     <h1>Vue-amap</h1>
     <router-link to="/">主页</router-link>
+    <router-link to="/hello">circle</router-link>
     <router-link to="/native">原生SDK</router-link>
     <router-link to="/search">搜索</router-link>
     <router-link to="/autoPosition">自动定位</router-link>

@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Router from "vue-router";
+import home from "@/components/Home";
 import HelloWorld from "@/components/HelloWorld";
 //高德原生SDK
 import native from "@/components/Native";
@@ -16,7 +17,12 @@ export default new Router({
   routes: [
     {
       path: "/",
-      name: "HelloWorld",
+      name: "home",
+      component: home
+    },
+    {
+      path: "/hello",
+      name: "hello",
       component: HelloWorld
     },
     {
