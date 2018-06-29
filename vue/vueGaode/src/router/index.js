@@ -3,12 +3,15 @@ import Router from "vue-router";
 import position from "@/pages/Position.vue";
 import drag from "@/pages/DragPage.vue";
 import filter from "@/pages/Filter.vue";
+import transition from "@/pages/Transition.vue";
 Vue.use(Router);
 
 export default new Router({
   routes: [
     {
-      path: "/"
+      path: "/",
+      name: "transition",
+      component: transition
     },
     {
       path: "/position",
