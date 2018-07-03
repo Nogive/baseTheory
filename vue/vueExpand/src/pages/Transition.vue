@@ -11,12 +11,15 @@
   </div>
 </template>
 <script>
+  import router from '@/router'
+  import Router from "vue-router";
   export default{
     name:'demo',
     data(){
-        return{
-            show:true
-        }
+      let vm=this;
+      return{
+        show:true,
+      }
     }
   }
 </script>

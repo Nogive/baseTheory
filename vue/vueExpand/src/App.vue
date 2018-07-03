@@ -1,7 +1,9 @@
 <template>
   <div id="app">
-    <h1>高德 SDK</h1>
-    <router-link to="/">动画</router-link>
+    <h1>Vue && 高德SDK</h1>
+    <router-link to="/">基础</router-link>
+    <router-link :to="{name:'transition',params:{source:'one'}}">动画</router-link>
+    <router-link :to="{name:'transition',params:{source:'two'}}">动画2</router-link>
     <router-link to="/filter">过滤器&指令</router-link>
     <router-link to="/position">定位</router-link>
     <router-link to="/drag">拖拽选点</router-link>
@@ -15,12 +17,11 @@
     </transition>
   </div>
   <!-- in-out：新元素先进行过渡，完成之后当前元素过渡离开。
-
   out-in：当前元素先进行过渡，完成之后新元素过渡进入。 -->
 </template>
 <script>
 export default {
-  name: 'App'
+  name: 'App',
 }
 </script>
 
