@@ -1,16 +1,16 @@
 <template>
   <div class="hello">
-    <p>{{ msg }} {{todo}}</p>
+    <p>{{ msg }} {{subMsg}}</p>
   </div>
 </template>
 
 <script>
 export default {
   name: 'menuIntroduce',
-  props:['todo'],
+  props:['subMsg'],
   data () {
     return {
-      msg: '这里是栏目介绍'
+      msg: 'query-1部分'
     }
   }
 }

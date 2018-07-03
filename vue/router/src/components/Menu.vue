@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }} {{id}}</h1>
+    <h1>{{ msg }} {{title}}</h1>
     <router-view></router-view>
   </div>
 </template>
@@ -8,7 +8,7 @@
 <script>
 export default {
   name: 'munu',
-  props:['id'],
+  props:['title'],
   data () {
     return {
       msg: '栏目'

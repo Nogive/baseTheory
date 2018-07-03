@@ -15,25 +15,24 @@ const router = new Router({
   base: __dirname,
   routes: [
     {
-      path: "/",
-      name: "home",
-      component: home
+      path: "/"
     },
     {
-      path: "/menu/:id",
+      path: "/menu/:title",
       component: menu,
       props: true,
       children: [
         {
-          path: "introduce",
+          path: "/",
           name: "menuIntroduce",
           component: menuIntroduce,
           props: true
         },
         {
-          path: "main",
+          path: "main/:param",
           name: "menuMain",
-          component: menuMain
+          component: menuMain,
+          props: true
         },
         {
           path: "end",
@@ -46,15 +45,16 @@ const router = new Router({
       path: "/aboutUs",
       //path: "/aboutUs/:name", //路径后面参数可见
       name: "aboutUs",
-      component: aboutUs
+      component: aboutUs,
+      meta: {
+        requiresAuth: false
+      }
     }
   ]
 });
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    // this route requires auth, check if logged in
-    // if not, redirect to login page.
-    if (!auth.loggedIn()) {
+    if (true) {
       next({
         path: "/home",
         query: { redirect: to.fullPath }

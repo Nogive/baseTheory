@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }} 参数{{$route.params.name}}</h1>
+    <p>{{ msg }} 参数:{{$route.params.name}}</p>
   </div>
 </template>
 
@@ -9,7 +9,7 @@ export default {
   name: 'aboutUs',
   data () {
     return {
-      msg: '关于我们'
+      msg: '传递参数部分'
     }
   }
 }

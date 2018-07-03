@@ -9,28 +9,19 @@ export default {
   name: 'menuEnd',
   data () {
     return {
-      msg: '这里是结束部分'
+      msg: 'query-3部分'
     }
   },
   beforeRouteEnter (to, from, next) {
-    // getPost(to.params.id, (err, post) => {
-    //   next(vm => vm.setData(err, post))
-    // })
-    console.log('before');
+    console.log('路由加载前');
+    next();
   },
   // 路由改变前，组件就已经渲染完了
   // 逻辑稍稍不同
   beforeRouteUpdate (to, from, next) {
-    // getPost(to.params.id, (err, post) => {
-    //   this.setData(err, post)
-    //   next()
-    // })
-    console.log('update');
+    console.log('路由数据更新前');
   },
   methods:{
-    setData(){
-      console.log(111);
-    }
   }
 }
 </script>

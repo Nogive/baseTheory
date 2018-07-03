@@ -1,22 +1,23 @@
 <template>
   <div class="hello">
-    <p>{{ msg }}</p>
+    <p>{{ msg }} {{param}}</p>
   </div>
 </template>
 
 <script>
 export default {
   name: 'menuMain',
+  props:['param'],
   data () {
     return {
-      msg: '栏目主要内容'
+      msg: 'query-2部分'
     }
   },
   created () {
     // 组件创建完后获取数据，
     // 此时 data 已经被 observed 了
     //this.fetchData()
-    console.log("创建完成");
+    console.log("created:组件创建完后获取数据");
   },
   watch: {
     // 如果路由有变化，会再次执行该方法
@@ -24,7 +25,7 @@ export default {
   },
   methods:{
     fetchData(){
-      console.log(111111);
+      console.log('获取数据');
     }
   }
 }
