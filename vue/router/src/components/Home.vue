@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
+    <p>{{ msg }}--{{num}}</p>
   </div>
 </template>
 
@@ -9,9 +9,21 @@ export default {
   name: 'home',
   data () {
     return {
-      msg: '主页'
+      msg: '默认视图',
+      num:0
     }
-  }
+  },
+  beforeRouteEnter:((to,from,next)=>{
+    console.log(to);
+    console.log(from);
+    if(from.name=="menuIntroduce"){
+      next(vm=>{
+        vm.num=1;
+      });
+    }else{
+      next();
+    }
+  })
 }
 </script>
 

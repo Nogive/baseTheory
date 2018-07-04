@@ -10,12 +10,26 @@ import menuEnd from "@/components/MenuEnd";
 
 Vue.use(Router);
 
+const left = {
+  template: "<p>左视图</p>"
+};
+const right = {
+  template: "<p>右视图</p>"
+};
+
 const router = new Router({
   mode: "history",
   base: __dirname,
   routes: [
     {
-      path: "/"
+      path: "/",
+      name: "home",
+      components: {
+        default: home,
+        left: left,
+        right: right
+      },
+      alias: "/home"
     },
     {
       path: "/menu/:title",
@@ -49,6 +63,10 @@ const router = new Router({
       meta: {
         requiresAuth: false
       }
+    },
+    {
+      path: "/redirect",
+      redirect: "/"
     }
   ]
 });
