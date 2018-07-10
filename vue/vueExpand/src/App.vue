@@ -1,10 +1,10 @@
 <template>
   <div id="app">
-    <h1>Vue && 高德SDK</h1>
+    <h1>Vue Demo</h1>
     <router-link to="/">基础</router-link>
-    <router-link :to="{name:'transition',params:{source:'one'}}">动画</router-link>
-    <router-link :to="{name:'transition',params:{source:'two'}}">动画2</router-link>
+    <router-link :to="{name:'transition'}">动画</router-link>
     <router-link to="/filter">过滤器&指令</router-link>
+    <router-link to="/passParams">组件传参</router-link>
     <router-link to="/position">定位</router-link>
     <router-link to="/drag">拖拽选点</router-link>
     <hr>
@@ -36,5 +36,9 @@ export default {
 }
 *{
   box-sizing: border-box;
+}
+.router-link-exact-active{
+  color: red;
+  font-weight: bold;
 }
 </style>

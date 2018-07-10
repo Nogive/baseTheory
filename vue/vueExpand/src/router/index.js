@@ -5,6 +5,7 @@ import drag from "@/pages/DragPage.vue";
 import filter from "@/pages/Filter.vue";
 import transition from "@/pages/Transition.vue";
 import base from "@/pages/Base.vue";
+import passParams from "@/pages/PassParams.vue";
 
 Vue.use(Router);
 const routes = [
@@ -35,6 +36,11 @@ const routes = [
     path: "/filter",
     name: "filter",
     component: filter
+  },
+  {
+    path: "/passParams",
+    name: "passParams",
+    component: passParams
   }
 ];
 const router = new Router({
