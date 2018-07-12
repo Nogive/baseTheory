@@ -7,6 +7,7 @@
     <router-link to="/passParams">组件传参</router-link>
     <router-link to="/position">定位</router-link>
     <router-link to="/drag">拖拽选点</router-link>
+    <router-link to="/flex">flex</router-link>
     <hr>
     <transition
       mode="out-in"
